@@ -12,20 +12,29 @@
 
 
 #include "functions.hpp" // импорт функций, связанных с матрицей и преобразованиями
-
+#include "input.hpp" // импорт функции ввода матрицы из файла
 
 int main()
 {
-    // исходная матрица, ввод сделаю потом
-
     // пусть вектор matrix будет исходной дополненной матрицей 
 
-    std::vector < std::vector <float> > matrix = 
+    std::vector < std::vector <float> > matrix;
+
+    input(matrix, "C:/Users/lightning/kfu-inf-cpp/Gauss_Method/input.txt", 3, 4);
+
+    std::cout << "matrix before the Gauss algo" << std::endl << std::endl;
+
+    for (int i = 0; i < matrix.size(); i++)
     {
-        {5, 3, 1, 1},
-        {4, 0, 2, 10},
-        {0, 1, 0, 2}
-    };
+        for (int j = 0; j < matrix[i].size(); j++)
+        {
+            std::cout << matrix[i][j] << ' ';
+        }
+        std::cout << std::endl;
+    }
+
+    std::cout << std::endl;
+
 
     const int matrix_size = matrix.size(); // создадим переменную, которая будет хранить размер матрицы (матрица квадратная, поэтому храним только одно число)
     // тут появился небольшой баг, так как у меня ширина матрицы на 1 больше чем длина ибо матрица изначально расширенная, но вроде все решилось быстро
@@ -34,8 +43,6 @@ int main()
     // контейнер с ответами
 
     std::map <unsigned int, float> answers;
-
-
 
     /*
     
@@ -54,7 +61,7 @@ int main()
     {
         float first_element = matrix[element_index_now][element_index_now];
 
-        if (first_element == 0) // если нужный элемент индексом akk равен нулю, то найдем другую строку на место этой, в которой на этом месте нет нулей
+        if (first_element == 0) // если нужный элемент индексом a[k][k] равен нулю, то найдем другую строку на место этой, в которой на этом месте нет нулей
         {
 
             int index_needed = -1;
@@ -68,12 +75,13 @@ int main()
                 }
             }
 
-            if (index_needed == -1)
+            if (index_needed == -1) // если такой элемент найти все же не получилось, то матрица не решаема и мы можем заканчивать
             {
                 std::cout << "matrix cannot be solved" << std::endl;
                 exit(0);
             }
         }
+
 
         for (unsigned int element_index = 0; element_index < matrix_size + 1; element_index++)
         {
@@ -82,7 +90,9 @@ int main()
 
         // умножим новое первое уравнения на число ak1 и вычтем из k-го уравнения
 
-        for (int k = element_index_now + 1; k < matrix_size; k++)
+        
+
+        for (int k = element_index_now + 1; k < matrix_size; ++k)
         {
 
             float a_K_1 = matrix[k][element_index_now]; // первый элемент k-го уравнения
@@ -91,7 +101,10 @@ int main()
             {
                 matrix[k][i] -= matrix[element_index_now][i] * a_K_1;
             }
+
         }
+        
+
     }
 
     std::cout << "matrix after the Gauss algo first part" << std::endl;
