@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <vector>
-
+#include <cmath>
 
 struct Matrix
 {
@@ -148,4 +148,52 @@ void gauss_algo_second_part(Matrix& matrix)
         }
     }
 
+}
+
+
+// функция детерминанта, но с кринжовой ассимптотикой (там вообще жесть, чет вроде факториал пополоам)
+float determinant(Matrix& matrix)
+{
+    float result = 0;
+
+    /*
+    разделим реализацию на два случая
+    1) когда размер матрицы 2x2
+    2) остальные случаи
+    */
+
+    if (matrix.rows == 2)
+    {
+        return matrix.matrix_body[0][0] * matrix.matrix_body[1][1] - matrix.matrix_body[1][0] * matrix.matrix_body[0][1]; 
+    } // нашли детерминант в случае матрицы 2x2
+    
+    /*
+    если матрица не 2x2, то рекурсивно посчитаем сумму алгебраических дополнений
+    */
+
+
+    for (int count = 0; count < matrix.rows; count++) // пройдемся по всем элементам первой строки и посчитаем для них алгебраические дополнения
+    {
+        Matrix new_matrix;
+
+        std::vector < std::vector <float> > new_matrix_body(matrix.rows - 1);
+
+        for (int i = 1; i < matrix.rows; i++)
+        {
+
+            for (int j = 0; j < matrix.rows; j++)
+            {
+                if (j != count) { new_matrix_body[i - 1].push_back(matrix.matrix_body[i][j]); }
+            }
+        }
+
+
+        new_matrix.matrix_body = new_matrix_body;
+        new_matrix.rows = matrix.rows - 1;
+
+
+        result += std::pow(-1, 2 + count) * matrix.matrix_body[0][count] * determinant(new_matrix); 
+    }
+
+    return result;
 }
