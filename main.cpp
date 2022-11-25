@@ -8,139 +8,34 @@
 
 #include <iostream>
 #include <vector>
-#include <map>
 
 
 #include "functions.hpp" // импорт функций, связанных с матрицей и преобразованиями
-#include "input.hpp" // импорт функции ввода матрицы из файла
+
 
 int main()
 {
-    // пусть вектор matrix будет исходной дополненной матрицей 
-
-    std::vector < std::vector <float> > matrix;
-
-    input(matrix, "C:/Users/lightning/kfu-inf-cpp/Gauss_Method/input.txt", 3, 4);
-
-    std::cout << "matrix before the Gauss algo" << std::endl << std::endl;
-
-    for (int i = 0; i < matrix.size(); i++)
-    {
-        for (int j = 0; j < matrix[i].size(); j++)
-        {
-            std::cout << matrix[i][j] << ' ';
-        }
-        std::cout << std::endl;
-    }
-
-    std::cout << std::endl;
+    Matrix my_matrix;
+    my_matrix.matrix_body = {
+        {1, 2, 3},
+        {4, 9, 13},
+        {9, 19, 29}
+    };
+    my_matrix.addition = {10, 41, 92};
+    my_matrix.rows = 3;
 
 
-    const int matrix_size = matrix.size(); // создадим переменную, которая будет хранить размер матрицы (матрица квадратная, поэтому храним только одно число)
-    // тут появился небольшой баг, так как у меня ширина матрицы на 1 больше чем длина ибо матрица изначально расширенная, но вроде все решилось быстро
+    std::cout << "Input:" << std::endl;
+    matrix_out(my_matrix);
+
+    gauss_algo_first_part(my_matrix);
 
 
-    // контейнер с ответами
+    std::cout << std::endl << "Matrix after gauss algo first part:" << std::endl;
+    matrix_out(my_matrix);
 
-    std::map <unsigned int, float> answers;
-
-    /*
-    
-    реализация метода Гаусса для заданной матрицы (способом ввода данных займусь потом)
-    метод работает для квадратных матриц, не имеющих нулевых коэфициентов в первом столбце
-
-    начну с прямого хода
-
-    */
-    
-
-
-    // предположим, что a11 != 0. разделим на это число коэфициенты первого уравнения
-
-    for (unsigned int element_index_now = 0; element_index_now < matrix_size; element_index_now++)
-    {
-        float first_element = matrix[element_index_now][element_index_now];
-
-        if (first_element == 0) // если нужный элемент индексом a[k][k] равен нулю, то найдем другую строку на место этой, в которой на этом месте нет нулей
-        {
-
-            int index_needed = -1;
-
-            for (int i = element_index_now; i < matrix_size; i++)
-            {
-                if (matrix[i][element_index_now] != 0)
-                {
-                    index_needed = i;
-                    break;
-                }
-            }
-
-            if (index_needed == -1) // если такой элемент найти все же не получилось, то матрица не решаема и мы можем заканчивать
-            {
-                std::cout << "matrix cannot be solved" << std::endl;
-                exit(0);
-            }
-        }
-
-
-        for (unsigned int element_index = 0; element_index < matrix_size + 1; element_index++)
-        {
-            matrix[element_index_now][element_index] /= first_element;
-        }
-
-        // умножим новое первое уравнения на число ak1 и вычтем из k-го уравнения
-
-        
-
-        for (int k = element_index_now + 1; k < matrix_size; ++k)
-        {
-
-            float a_K_1 = matrix[k][element_index_now]; // первый элемент k-го уравнения
-
-            for (int i = 0; i < matrix_size  + 1; i++)
-            {
-                matrix[k][i] -= matrix[element_index_now][i] * a_K_1;
-            }
-
-        }
-        
-
-    }
-
-    std::cout << "matrix after the Gauss algo first part" << std::endl;
-
-    for (auto vect: matrix)
-    {
-        for (auto element: vect)
-        {
-            std::cout << element << ' ';
-        }
-        std::cout << std::endl;
-    }
-
-
-    answers[matrix_size - 1] = matrix[matrix_size - 1][matrix_size];
-
-
-    // теперь обратный ход (как прямой - только обратный)
-
-    for (int i = matrix_size - 1; i >= 0; i -= 1)
-    {
-        float answer = matrix[i][matrix_size];
-        for (int element_index = matrix_size - 1; element_index > i; element_index -= 1)
-        {
-            answer -= answers[element_index] * matrix[i][element_index];
-        }
-        answers[i] = answer;
-
-    }
-
-    std::cout << std::endl << "answers" << std::endl;
-
-    for (int i = 0; i < matrix_size; i++)
-    {
-        std::cout << 'x' << i + 1 << " = " << answers[i] << std::endl;
-    }
+    gauss_algo_second_part(my_matrix);
+    matrix_answers_out(my_matrix);
 
     return 0;
 }

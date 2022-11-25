@@ -1,100 +1,151 @@
-#pragma once // не знаю вообще зачем добавил, один раз все подключаю в main.cpp, но пусть будет на всякий
+#pragma once
 
 
+#include <iostream>
 #include <vector>
 
 
-
-
-/*
-Альфа преобразования для всей матрицы.
-Преобразования, заключающиеся в домножении всей матрицы на скаляр.
-*/
-void matrix_multiply(std::vector < std::vector <float> > &matrix, float multiply_number)
+struct Matrix
 {
-    for (int i = 0; i < matrix.size(); i++)
+    std::vector < std::vector <float> > matrix_body; // тело матрицы
+    std::vector < float > addition; // дополнение матрицы
+    std::vector < float > roots; // вектор ответов
+    unsigned int rows; // количество строк
+    // float determinant; // определитель матрицы
+    /*
+    пока не подберу адекватный по ассимтотике алгоритм для детерминанта, тут будет коммент вместо поля определителя
+    */
+};
+
+
+void matrix_out(const Matrix& matrix)
+{
+    for (unsigned int i = 0; i < matrix.rows; i++)
     {
-        for (int j = 0; j < matrix[i].size(); j++)
+        for (int j = 0; j < matrix.rows; j++)
         {
-            matrix[i][j] = matrix[i][j] * multiply_number;
+            std::cout << matrix.matrix_body[i][j] << ' ';
+        }
+
+        std::cout << "  |\t" <<  matrix.addition[i] << std::endl;
+    }
+}
+
+
+void matrix_answers_out(const Matrix& matrix)
+{
+    std::cout << std::endl;
+
+    for (unsigned int i = 0; i < matrix.rows; i++)
+    {
+        std::cout << 'x' << i + 1 << "  =  " << matrix.roots[i] << std::endl;
+    }
+}
+
+// деление строки, применяется непосредственно в методе Гаусса
+void matrix_line_division(Matrix& matrix, unsigned int line, float scalar)
+{
+    for (unsigned int i = 0; i < matrix.rows; i++)
+    {
+        matrix.matrix_body[line][i] /= scalar;
+    }
+
+    matrix.addition[line] /= scalar;
+}
+
+
+// вычитание строк друг из друга, возможно домножение
+void matrix_line_subtraction(Matrix& matrix, unsigned int line_1, unsigned int line_2, float koefficient=1)
+{
+    for (unsigned int i = 0; i < matrix.rows; i++)
+    {
+        matrix.matrix_body[line_2][i] -= matrix.matrix_body[line_1][i] * koefficient;
+    }
+
+    matrix.addition[line_2] -= matrix.addition[line_1] * koefficient;
+}
+
+
+// замена строк местами
+void matrix_line_swap(Matrix& matrix, unsigned int line_1, unsigned int line_2)
+{
+    std::vector <float> swap_line(matrix.rows);
+    float swap_value;
+
+    swap_line = matrix.matrix_body[line_1];
+    matrix.matrix_body[line_1] = matrix.matrix_body[line_2];
+    matrix.matrix_body[line_2] = swap_line;
+
+    swap_value = matrix.addition[line_1];
+    matrix.addition[line_1] = matrix.addition[line_2];
+    matrix.addition[line_2] = swap_value;
+}
+
+
+// замена строки с нулем на диагонали
+int matrix_zero_change(Matrix& matrix, unsigned int line, unsigned int koefficient_number)
+{
+    for (unsigned int i = line + 1; i < matrix.rows; i++)
+    {
+        if (matrix.matrix_body[i][koefficient_number] != 0)
+        {
+            matrix_line_swap(matrix, line, i);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+// прямой ход метода Гаусса
+void gauss_algo_first_part(Matrix& matrix)
+{
+    
+    for (unsigned int element_index_now = 0; element_index_now < matrix.rows; element_index_now++)
+    {
+        // проверим на ноль элемент на диагонали
+        if (matrix.matrix_body[element_index_now][element_index_now] == 0) // в случае нахождении нуля на диагонали заменяем его
+        { 
+            int result = matrix_zero_change(matrix, element_index_now, element_index_now);
+            
+            if (result == 0) // если поменять строку с нулем не получилось, то матрицу решить не получится, завершаем программу
+            {
+                std::cout << "Matrix cannot be solved" << std::endl;
+                exit(0);
+            }
+        }  
+
+
+        // разделим на первый элемент всю строку, тем самым приведем ее к виду "0 ... 1 ..."
+        matrix_line_division(matrix, element_index_now, matrix.matrix_body[element_index_now][element_index_now]); 
+
+
+        // зануляем весь оставшийся столбец
+        for (unsigned int i = element_index_now + 1; i < matrix.rows; i++)
+        {
+            matrix_line_subtraction(matrix, element_index_now, i, matrix.matrix_body[i][element_index_now]);
         }
     }
 }
 
 
-/*
-Гамма преобразования.
-Преобразования, заключающиеся в добавлении к строке чисел, кратных другой строке.
-*/
-void line_plus_line(std::vector < std::vector <float> > &matrix, unsigned int line_1, unsigned int line_2, float number)
+
+// обратный ход метода Гаусса
+void gauss_algo_second_part(Matrix& matrix)
 {
-    for (int i = 0; i < matrix[0].size(); i++)
+    std::vector <float> answers(matrix.rows);
+    matrix.roots = answers;
+    matrix.roots[matrix.rows - 1] = matrix.addition[matrix.rows - 1];
+    
+
+    for (int element_index_now = matrix.rows - 2; element_index_now >= 0; element_index_now -= 1)
     {
-        matrix[line_1][i] += matrix[line_2][i] * number;
-    }
-}
+        matrix.roots[element_index_now] = matrix.addition[element_index_now];
 
-
-
-/*
-Функция, позволяющая определить ряд с наименьшим первым числом.
-Помогает при сортировке матрицы путем замены строк.
-*/
-unsigned int find_min_firstline_element(std::vector < std::vector <float> > matrix, unsigned int line_start)
-{
-    float min_now = matrix[line_start][0];
-    unsigned int index_min = line_start;
-
-    for (int i = line_start; i < matrix.size(); i++)
-    {
-        if (matrix[i][0] < min_now)
+        for (unsigned int j = matrix.rows - 1; j > element_index_now; j -= 1)
         {
-            min_now = matrix[i][0];
-            index_min = i;
+            matrix.roots[element_index_now] -= matrix.matrix_body[element_index_now][j] * matrix.roots[j];    
         }
     }
 
-    return index_min;
-}
-
-
-/*
-Косметические преобразования матрицы.
-Преобразования заключаются в изменении порядка строк.
-*/
-void line_swap(std::vector <std::vector <float> > &matrix, unsigned int line_1, unsigned int line_2)
-{
-    std::vector <float> swap_line_vector = matrix[line_2];
-
-    matrix[line_2] = matrix[line_1];
-    matrix[line_1] = swap_line_vector;
-}
-
-
-/*
-Альфа преобразования.
-Преобразования, заключающиеся в домножении конкретной строки матрицы на скаляр.
-*/
-void line_multiply(std::vector <std::vector <float> > &matrix, unsigned int line_number, float multiply_number)
-{
-    for (int i = 0; i < matrix[line_number].size(); i++) { matrix[line_number][i] = matrix[line_number][i] * multiply_number; }
-}
-
-
-/*
-Косметические преобразования.
-Преобразования, заключающиеся в сортировке строк матрицы для того чтобы глазкам было не больно смотреть))))
-*/
-void matrix_lines_sort(std::vector < std::vector <float> > &matrix)
-{
-    for (int i = 0; i < matrix.size(); i++)
-    {
-        unsigned int line_needed = find_min_firstline_element(matrix, i);
-
-        if (i != line_needed)
-        {
-            line_swap(matrix, i, line_needed);
-        }
-
-    }
 }
