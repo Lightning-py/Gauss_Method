@@ -1,22 +1,81 @@
 #pragma once
 
-
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <string>
+#include <fstream>
 
 struct Matrix
 {
-    std::vector < std::vector <float> > matrix_body; // тело матрицы
-    std::vector < float > addition; // дополнение матрицы
-    std::vector < float > roots; // вектор ответов
+    std::vector < std::vector <double> > matrix_body; // тело матрицы
+    std::vector < double > addition; // дополнение матрицы
+    std::vector < double > roots; // вектор ответов
     unsigned int rows; // количество строк
-    // float determinant; // определитель матрицы
+    // double determinant; // определитель матрицы
     /*
     пока не подберу адекватный по ассимтотике алгоритм для детерминанта, тут будет коммент вместо поля определителя
     */
 };
 
+void matrix_out_file(Matrix& matrix, std::string filename, bool error=false)
+{
+    std::ofstream matrix_output;
+    matrix_output.open(filename);
+
+    if (!error)
+    {   
+        for (int i = 0; i < matrix.rows; ++i)
+        {
+            matrix_output << matrix.roots[i] << ' ';
+        }
+    }
+    else
+    {
+        matrix_output << "Matrix cannot be solved";
+    }
+
+    matrix_output.close();
+
+}
+
+
+void matrix_in(Matrix& matrix, std::string filaname)
+{
+    matrix.matrix_body = {};
+    matrix.addition = {};
+
+    std::ifstream matrix_input;
+    matrix_input.open(filaname);
+
+
+    unsigned int lenght;
+
+    matrix_input >> lenght;
+    matrix.rows = lenght;
+
+    int temp;
+
+    for (int i = 0; i < lenght; ++i)
+    {
+        matrix.matrix_body.push_back({});
+
+        for (int j = 0; j < lenght; ++j)
+        {
+            // чтение матрицы поэлементно
+            matrix_input >> temp;
+
+            matrix.matrix_body[i].push_back(temp);
+        }
+        
+        // чтение дополнения
+        matrix_input >> temp;
+        matrix.addition.push_back(temp);
+    }
+
+    matrix_input.close();
+
+}
 
 void matrix_out(const Matrix& matrix)
 {
@@ -43,7 +102,7 @@ void matrix_answers_out(const Matrix& matrix)
 }
 
 // деление строки, применяется непосредственно в методе Гаусса
-void matrix_line_division(Matrix& matrix, unsigned int line, float scalar)
+void matrix_line_division(Matrix& matrix, unsigned int line, double scalar)
 {
     for (unsigned int i = 0; i < matrix.rows; i++)
     {
@@ -55,7 +114,7 @@ void matrix_line_division(Matrix& matrix, unsigned int line, float scalar)
 
 
 // вычитание строк друг из друга, возможно домножение
-void matrix_line_subtraction(Matrix& matrix, unsigned int line_1, unsigned int line_2, float koefficient=1)
+void matrix_line_subtraction(Matrix& matrix, unsigned int line_1, unsigned int line_2, double koefficient=1)
 {
     for (unsigned int i = 0; i < matrix.rows; i++)
     {
@@ -69,8 +128,8 @@ void matrix_line_subtraction(Matrix& matrix, unsigned int line_1, unsigned int l
 // замена строк местами
 void matrix_line_swap(Matrix& matrix, unsigned int line_1, unsigned int line_2)
 {
-    std::vector <float> swap_line(matrix.rows);
-    float swap_value;
+    std::vector <double> swap_line(matrix.rows);
+    double swap_value;
 
     swap_line = matrix.matrix_body[line_1];
     matrix.matrix_body[line_1] = matrix.matrix_body[line_2];
@@ -110,7 +169,7 @@ void gauss_algo_first_part(Matrix& matrix)
             
             if (result == 0) // если поменять строку с нулем не получилось, то матрицу решить не получится, завершаем программу
             {
-                std::cout << "Matrix cannot be solved" << std::endl;
+                matrix_out_file(matrix, "OUTPUT.TXT", true);
                 exit(0);
             }
         }  
@@ -133,7 +192,7 @@ void gauss_algo_first_part(Matrix& matrix)
 // обратный ход метода Гаусса
 void gauss_algo_second_part(Matrix& matrix)
 {
-    std::vector <float> answers(matrix.rows);
+    std::vector <double> answers(matrix.rows);
     matrix.roots = answers;
     matrix.roots[matrix.rows - 1] = matrix.addition[matrix.rows - 1];
     
@@ -152,9 +211,9 @@ void gauss_algo_second_part(Matrix& matrix)
 
 
 // функция детерминанта, но с кринжовой ассимптотикой (там вообще жесть, чет вроде факториал пополоам)
-float determinant(Matrix& matrix)
+double determinant(Matrix& matrix)
 {
-    float result = 0;
+    double result = 0;
 
     /*
     разделим реализацию на два случая
@@ -176,7 +235,7 @@ float determinant(Matrix& matrix)
     {
         Matrix new_matrix;
 
-        std::vector < std::vector <float> > new_matrix_body(matrix.rows - 1);
+        std::vector < std::vector <double> > new_matrix_body(matrix.rows - 1);
 
         for (int i = 1; i < matrix.rows; i++)
         {
@@ -197,3 +256,4 @@ float determinant(Matrix& matrix)
 
     return result;
 }
+
