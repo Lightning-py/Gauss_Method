@@ -6,3 +6,5 @@ project(Gauss_Method)
 
 # add the executable
 add_executable(Gauss_Method main.cpp functions.hpp)
+
+execute_process(COMMAND "python test.py")
