@@ -1,10 +1,6 @@
 /*
 Реализация метода Гаусса взята из учебника Ф.Г. Авхадиева "Основы численных методов"
-
 ссылка на учебник: https://kpfu.ru//staff_files/F240899232/OsnChM_Avkhadiev_FG.pdf
-
-
-
 */
 
 bool DEBUG = false;
@@ -31,7 +27,7 @@ int main()
         matrix_out(my_matrix);
     }
 
-    gauss_algo_first_part(my_matrix);
+    gauss_first_pass(my_matrix);
 
     if (DEBUG)
     {
@@ -40,7 +36,7 @@ int main()
     }
     
 
-    gauss_algo_second_part(my_matrix);
+    gauss_second_pass(my_matrix);
     if (FILE_OUTPUT)
     {
         matrix_out_file(my_matrix, "OUTPUT.TXT");
