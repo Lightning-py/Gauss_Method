@@ -13,19 +13,19 @@ INPUT_FILE, OUTPUT_FILE = "INPUT.TXT", "OUTPUT.TXT"
 
 EXE_NAME = "Gauss_Method.exe"
 
-ACURACY = 10**-3
+ACCURACY = 10**-3
 
 
-def write_matrix(matrix, addition, matrix_order, file_adress=INPUT_FILE):
-    with open(file_adress, "w") as file:
+def write_matrix(matrix, addition, matrix_order, file_address=INPUT_FILE):
+    with open(file_address, "w") as file:
         file.write(str(matrix_order) + "\n")
 
         for i in range(matrix_order):
             file.write(" ".join(map(str, (np.append(matrix[i], [addition[i]])))) + "\n")
 
 
-def get_answers(file_adress=OUTPUT_FILE):
-    with open(file_adress) as file:
+def get_answers(file_address=OUTPUT_FILE):
+    with open(file_address) as file:
         data = file.read()
 
         if data.strip() == "Matrix cannot be solved":
@@ -35,41 +35,25 @@ def get_answers(file_adress=OUTPUT_FILE):
 
 
 def answer_check(answers, standard):
-    return all(
-        [
-            standard[i] - ACURACY <= answers[i] <= standard[i] + ACURACY
-            for i in range(len(answers))
-        ]
-    )
+    # * help(np.allclose)
+    return np.alltrue(np.abs(answers-standard) <= ACCURACY)
 
 
-tests = []  # element: [ matrix, addition, numpy_solution, GaussMethod_solution]
+tests = []  # element: dict(matrix, addition, numpy_solution, GaussMethod_solution)
 
 test_number = 1
 
 for matrix_order in range(2, MATRIX_ORDER_MAX + 1):
     for test in range(TESTS_FOR_EVERY_MATRIX_ORDER):
-        matrix = np.array(
-            [
-                [
-                    round(random.uniform(NUMBER_MIN, NUMBER_MAX))
-                    for i in range(matrix_order)
-                ]
-                for i in range(matrix_order)
-            ]
-        )
-
-        addition = np.array(
-            [round(random.uniform(NUMBER_MIN, NUMBER_MAX)) for i in range(matrix_order)]
-        )
+        matrix = np.random.random_integers(NUMBER_MIN, NUMBER_MAX, matrix_order)
+        addition = np.random.random_integers(NUMBER_MIN, NUMBER_MAX, matrix_order)
 
         det_matrix = np.linalg.det(matrix)
 
         if det_matrix:
-            solution_array = list(map(float, np.linalg.solve(matrix, addition)))
-
+            solution = list(np.linalg.solve(matrix, addition))
         else:
-            solution_array = "Matrix cannot be solved"
+            solution = "Matrix cannot be solved"
 
         write_matrix(matrix, addition, matrix_order)
 
@@ -80,15 +64,19 @@ for matrix_order in range(2, MATRIX_ORDER_MAX + 1):
         if det_matrix == 0:
             if answers == 0:
                 pass
-
         else:
-            answer_correctness = answer_check(answers, solution_array)
+            correct_answer = answer_check(answers, solution)
 
-            if not answer_correctness:
-                tests.append([matrix, addition, solution_array, answers])
+            if not correct_answer:
+                tests.append(
+                    {
+                        "matrix": matrix,
+                        "addition": addition,
+                        "solution": solution,
+                        "answers": answers
+                    }
+                )
 
 
-for test in tests:
-    print(
-        f"#----\nmatrix:\n{test[0]}\n\naddition:\n{test[1]}\n\nnumpy_solution:\n{test[2]}\n\nsolution_cpp:\n{test[3]}\n"
-    )
+for i in range(len(tests)):
+    print(f"{tests[i]=}")
