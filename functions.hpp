@@ -10,11 +10,11 @@ struct Matrix
 {
     std::vector < std::vector <double> > body; // тело матрицы
     std::vector < double > addition; // дополнение матрицы
-    std::vector < double > roots; // вектор ответов
+    std::vector < double > roots; // вектор решений
     unsigned int rows; // количество строк
     // double determinant; // определитель матрицы
     /*
-    пока не подберу адекватный по ассимтотике алгоритм для детерминанта, тут будет коммент вместо поля определителя
+    пока не подберу адекватный по асимтотике алгоритм для детерминанта, тут будет коммент вместо поля определителя
     */
 };
 
@@ -40,27 +40,27 @@ void matrix_out_file(Matrix& matrix, std::string filename, bool error=false)
 }
 
 
-void matrix_in(Matrix& matrix, std::string filaname)
+void matrix_in(Matrix& matrix, std::string filename)
 {
     matrix.body = {};
     matrix.addition = {};
 
     std::ifstream matrix_input;
-    matrix_input.open(filaname);
+    matrix_input.open(filename);
 
 
-    unsigned int lenght;
+    unsigned int length;
 
-    matrix_input >> lenght;
-    matrix.rows = lenght;
+    matrix_input >> length;
+    matrix.rows = length;
 
     int temp;
 
-    for (int i = 0; i < lenght; ++i)
+    for (int i = 0; i < length; ++i)
     {
         matrix.body.push_back({});
 
-        for (int j = 0; j < lenght; ++j)
+        for (int j = 0; j < length; ++j)
         {
             // чтение матрицы поэлементно
             matrix_input >> temp;
@@ -114,14 +114,14 @@ void matrix_line_division(Matrix& matrix, unsigned int line, double scalar)
 
 
 // вычитание строк друг из друга, возможно домножение
-void matrix_line_subtraction(Matrix& matrix, unsigned int line_1, unsigned int line_2, double koefficient=1)
+void matrix_line_subtraction(Matrix& matrix, unsigned int line_1, unsigned int line_2, double coefficient=1)
 {
     for (unsigned int i = 0; i < matrix.rows; i++)
     {
-        matrix.body[line_2][i] -= matrix.body[line_1][i] * koefficient;
+        matrix.body[line_2][i] -= matrix.body[line_1][i] * coefficient;
     }
 
-    matrix.addition[line_2] -= matrix.addition[line_1] * koefficient;
+    matrix.addition[line_2] -= matrix.addition[line_1] * coefficient;
 }
 
 
@@ -142,11 +142,11 @@ void matrix_line_swap(Matrix& matrix, unsigned int line_1, unsigned int line_2)
 
 
 // замена строки с нулем на диагонали
-int matrix_zero_change(Matrix& matrix, unsigned int line, unsigned int koefficient_number)
+int matrix_zero_change(Matrix& matrix, unsigned int line, unsigned int coefficient_number)
 {
     for (unsigned int i = line + 1; i < matrix.rows; i++)
     {
-        if (matrix.body[i][koefficient_number] != 0)
+        if (matrix.body[i][coefficient_number] != 0)
         {
             matrix_line_swap(matrix, line, i);
             return 1;
@@ -157,13 +157,13 @@ int matrix_zero_change(Matrix& matrix, unsigned int line, unsigned int koefficie
 
 
 // прямой ход метода Гаусса
-void gauss_algo_first_part(Matrix& matrix)
+void gauss_first_pass(Matrix& matrix)
 {
     
     for (unsigned int element_index_now = 0; element_index_now < matrix.rows; element_index_now++)
     {
         // проверим на ноль элемент на диагонали
-        if (matrix.body[element_index_now][element_index_now] == 0) // в случае нахождении нуля на диагонали заменяем его
+        if (matrix.body[element_index_now][element_index_now] == 0) // в случае нахождения нуля на диагонали заменяем его
         { 
             int result = matrix_zero_change(matrix, element_index_now, element_index_now);
             
@@ -190,7 +190,7 @@ void gauss_algo_first_part(Matrix& matrix)
 
 
 // обратный ход метода Гаусса
-void gauss_algo_second_part(Matrix& matrix)
+void gauss_second_pass(Matrix& matrix)
 {
     std::vector <double> answers(matrix.rows);
     matrix.roots = answers;
@@ -210,7 +210,7 @@ void gauss_algo_second_part(Matrix& matrix)
 }
 
 
-// функция детерминанта, но с кринжовой ассимптотикой (там вообще жесть, чет вроде факториал пополоам)
+// функция детерминанта, но с кринжовейшей асимптотикой (там вообще жесть, чет вроде факториал пополам)
 double determinant(Matrix& matrix)
 {
     double result = 0;
