@@ -8,7 +8,7 @@
 
 struct Matrix
 {
-    std::vector < std::vector <double> > matrix_body; // тело матрицы
+    std::vector < std::vector <double> > body; // тело матрицы
     std::vector < double > addition; // дополнение матрицы
     std::vector < double > roots; // вектор ответов
     unsigned int rows; // количество строк
@@ -42,7 +42,7 @@ void matrix_out_file(Matrix& matrix, std::string filename, bool error=false)
 
 void matrix_in(Matrix& matrix, std::string filaname)
 {
-    matrix.matrix_body = {};
+    matrix.body = {};
     matrix.addition = {};
 
     std::ifstream matrix_input;
@@ -58,14 +58,14 @@ void matrix_in(Matrix& matrix, std::string filaname)
 
     for (int i = 0; i < lenght; ++i)
     {
-        matrix.matrix_body.push_back({});
+        matrix.body.push_back({});
 
         for (int j = 0; j < lenght; ++j)
         {
             // чтение матрицы поэлементно
             matrix_input >> temp;
 
-            matrix.matrix_body[i].push_back(temp);
+            matrix.body[i].push_back(temp);
         }
         
         // чтение дополнения
@@ -83,7 +83,7 @@ void matrix_out(const Matrix& matrix)
     {
         for (int j = 0; j < matrix.rows; j++)
         {
-            std::cout << matrix.matrix_body[i][j] << ' ';
+            std::cout << matrix.body[i][j] << ' ';
         }
 
         std::cout << "  |\t" <<  matrix.addition[i] << std::endl;
@@ -106,7 +106,7 @@ void matrix_line_division(Matrix& matrix, unsigned int line, double scalar)
 {
     for (unsigned int i = 0; i < matrix.rows; i++)
     {
-        matrix.matrix_body[line][i] /= scalar;
+        matrix.body[line][i] /= scalar;
     }
 
     matrix.addition[line] /= scalar;
@@ -118,7 +118,7 @@ void matrix_line_subtraction(Matrix& matrix, unsigned int line_1, unsigned int l
 {
     for (unsigned int i = 0; i < matrix.rows; i++)
     {
-        matrix.matrix_body[line_2][i] -= matrix.matrix_body[line_1][i] * koefficient;
+        matrix.body[line_2][i] -= matrix.body[line_1][i] * koefficient;
     }
 
     matrix.addition[line_2] -= matrix.addition[line_1] * koefficient;
@@ -131,9 +131,9 @@ void matrix_line_swap(Matrix& matrix, unsigned int line_1, unsigned int line_2)
     std::vector <double> swap_line(matrix.rows);
     double swap_value;
 
-    swap_line = matrix.matrix_body[line_1];
-    matrix.matrix_body[line_1] = matrix.matrix_body[line_2];
-    matrix.matrix_body[line_2] = swap_line;
+    swap_line = matrix.body[line_1];
+    matrix.body[line_1] = matrix.body[line_2];
+    matrix.body[line_2] = swap_line;
 
     swap_value = matrix.addition[line_1];
     matrix.addition[line_1] = matrix.addition[line_2];
@@ -146,7 +146,7 @@ int matrix_zero_change(Matrix& matrix, unsigned int line, unsigned int koefficie
 {
     for (unsigned int i = line + 1; i < matrix.rows; i++)
     {
-        if (matrix.matrix_body[i][koefficient_number] != 0)
+        if (matrix.body[i][koefficient_number] != 0)
         {
             matrix_line_swap(matrix, line, i);
             return 1;
@@ -163,7 +163,7 @@ void gauss_algo_first_part(Matrix& matrix)
     for (unsigned int element_index_now = 0; element_index_now < matrix.rows; element_index_now++)
     {
         // проверим на ноль элемент на диагонали
-        if (matrix.matrix_body[element_index_now][element_index_now] == 0) // в случае нахождении нуля на диагонали заменяем его
+        if (matrix.body[element_index_now][element_index_now] == 0) // в случае нахождении нуля на диагонали заменяем его
         { 
             int result = matrix_zero_change(matrix, element_index_now, element_index_now);
             
@@ -176,13 +176,13 @@ void gauss_algo_first_part(Matrix& matrix)
 
 
         // разделим на первый элемент всю строку, тем самым приведем ее к виду "0 ... 1 ..."
-        matrix_line_division(matrix, element_index_now, matrix.matrix_body[element_index_now][element_index_now]); 
+        matrix_line_division(matrix, element_index_now, matrix.body[element_index_now][element_index_now]); 
 
 
         // зануляем весь оставшийся столбец
         for (unsigned int i = element_index_now + 1; i < matrix.rows; i++)
         {
-            matrix_line_subtraction(matrix, element_index_now, i, matrix.matrix_body[i][element_index_now]);
+            matrix_line_subtraction(matrix, element_index_now, i, matrix.body[i][element_index_now]);
         }
     }
 }
@@ -203,7 +203,7 @@ void gauss_algo_second_part(Matrix& matrix)
 
         for (unsigned int j = matrix.rows - 1; j > element_index_now; j -= 1)
         {
-            matrix.roots[element_index_now] -= matrix.matrix_body[element_index_now][j] * matrix.roots[j];    
+            matrix.roots[element_index_now] -= matrix.body[element_index_now][j] * matrix.roots[j];    
         }
     }
 
@@ -223,7 +223,7 @@ double determinant(Matrix& matrix)
 
     if (matrix.rows == 2)
     {
-        return matrix.matrix_body[0][0] * matrix.matrix_body[1][1] - matrix.matrix_body[1][0] * matrix.matrix_body[0][1]; 
+        return matrix.body[0][0] * matrix.body[1][1] - matrix.body[1][0] * matrix.body[0][1]; 
     } // нашли детерминант в случае матрицы 2x2
     
     /*
@@ -242,16 +242,16 @@ double determinant(Matrix& matrix)
 
             for (int j = 0; j < matrix.rows; j++)
             {
-                if (j != count) { new_matrix_body[i - 1].push_back(matrix.matrix_body[i][j]); }
+                if (j != count) { new_matrix_body[i - 1].push_back(matrix.body[i][j]); }
             }
         }
 
 
-        new_matrix.matrix_body = new_matrix_body;
+        new_matrix.body = new_matrix_body;
         new_matrix.rows = matrix.rows - 1;
 
 
-        result += std::pow(-1, 2 + count) * matrix.matrix_body[0][count] * determinant(new_matrix); 
+        result += std::pow(-1, 2 + count) * matrix.body[0][count] * determinant(new_matrix); 
     }
 
     return result;
