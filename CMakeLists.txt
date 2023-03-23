@@ -1,10 +1,19 @@
 cmake_minimum_required(VERSION 3.10)
 
 
-# set the project name
-project(Gauss_Method)
+project(MatrixCalculator)
 
-# add the executable
-add_executable(Gauss_Method main.cpp functions.hpp)
 
-execute_process(COMMAND "python test.py")
+include(FetchContent)
+FetchContent_Declare(
+    argparse
+    GIT_REPOSITORY https://github.com/p-ranav/argparse.git
+)
+FetchContent_MakeAvailable(argparse)
+
+
+add_executable(MatrixCalculator main.cpp matrix.hpp frac.hpp tools.hpp)
+target_link_libraries(MatrixCalculator argparse)
+
+
+
