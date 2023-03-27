@@ -124,6 +124,18 @@ class Matrix
 
 };
 
+std::ostream& operator<< (std::ostream& stream, const Matrix& matrix)
+{
+    for (size_t i = 0; i < matrix.rows; ++i)
+    {
+        for (size_t j = 0; j < matrix.columns; ++j)
+            stream << matrix.body[i][j] << "\t";
+        stream << "| " << matrix.addition[i] << std::endl;
+    }
+
+    return stream;
+}
+
 Frac determinant(Matrix matrix)
 {
     Frac val = matrix.gauss_method_part_1();
@@ -143,6 +155,7 @@ std::vector<Frac> cramer_method(Matrix matrix)
     Frac det = determinant(matrix_copy);
 
     std::vector<Frac> roots(matrix_copy.rows);
+    std::vector<Matrix> matricies(matrix.rows, matrix);
 
     if (det == Frac(0))
     {
@@ -150,20 +163,28 @@ std::vector<Frac> cramer_method(Matrix matrix)
     }
 
 
-    Frac temp(1);
+    std::vector<Frac> temp(matrix_copy.rows, Frac(0));
 
-
-    for (size_t col = 0; col < matrix_copy.columns; ++col)
+    #pragma omp parallel
     {
-        matrix_copy = matrix;
+    #pragma omp  for
+        for (size_t col = 0; col < matrix_copy.columns; ++col)
+        {
 
-        for (size_t i = 0; i < matrix_copy.rows; ++i)
-            matrix_copy.body[i][col] = matrix_copy.addition[i];
-        
-        
-        temp = determinant(matrix_copy);
+            matrix_copy = matrix;
 
-        roots[col] = temp / det;
+
+
+            for (size_t i = 0; i < matrix_copy.rows; ++i)
+            {
+
+                matricies[col].body[i][col] = matricies[col].addition[i];
+            }
+            
+            temp[col] = determinant(matricies[col]);
+
+            roots[col] = temp[col] / det;
+        }
     }
 
     return roots;
@@ -192,17 +213,7 @@ std::istream& operator>>(std::istream& stream, Matrix& matrix)
     return stream;
 }
 
-std::ostream& operator<< (std::ostream& stream, const Matrix& matrix)
-{
-    for (size_t i = 0; i < matrix.rows; ++i)
-    {
-        for (size_t j = 0; j < matrix.columns; ++j)
-            stream << matrix.body[i][j] << "\t";
-        stream << "| " << matrix.addition[i] << std::endl;
-    }
 
-    return stream;
-}
 
 Matrix operator+(const Matrix& matrix, const Matrix& matrix_2)
 {

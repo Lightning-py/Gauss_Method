@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.10)
 
 project(MatrixCalculator)
 
+add_compile_options(-Wall -fopenmp)
+add_link_options(-fopenmp -lgomp)
 
 include(FetchContent)
 FetchContent_Declare(
